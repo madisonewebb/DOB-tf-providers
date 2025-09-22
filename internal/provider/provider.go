@@ -36,7 +36,7 @@ type DevOpsProviderModel struct {
 }
 
 func (p *DevOpsProvider) Metadata(ctx context.Context, req provider.MetadataRequest, resp *provider.MetadataResponse) {
-	resp.TypeName = "devops"
+	resp.TypeName = "devops-bootcamp"
 	resp.Version = p.version
 }
 
@@ -46,7 +46,8 @@ func (p *DevOpsProvider) Schema(_ context.Context, _ provider.SchemaRequest, res
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			"endpoint": schema.StringAttribute{
-				Optional: true,
+				Optional:    true,
+				Description: "URI for DevOps API. May also be provided via DEVOPS_ENDPOINT environment variable.",
 			},
 		},
 	}
@@ -69,7 +70,7 @@ func (p *DevOpsProvider) Configure(ctx context.Context, req provider.ConfigureRe
 			path.Root("endpoint"),
 			"Unknown DevOps API Endpoint",
 			"The provider cannot create the DevOps API client as there is an unknown configuration value for the DevOps API endpoint. "+
-				"Either target apply the source of the value first, set the value statically in the configuration, or use the DEVOPS_HOST environment variable.",
+				"Either target apply the source of the value first, set the value statically in the configuration, or use the DEVOPS_ENDPOINT environment variable.",
 		)
 	}
 
@@ -94,7 +95,7 @@ func (p *DevOpsProvider) Configure(ctx context.Context, req provider.ConfigureRe
 			path.Root("endpoint"),
 			"Missing DevOps API Endpoint",
 			"The provider cannot create the DevOps API client as there is a missing or empty value for the DevOps API endpoint. "+
-				"Set the endpoint value in the configuration or use the DEVOPS_HOST environment variable. "+
+				"Set the endpoint value in the configuration or use the DEVOPS_ENDPOINT environment variable. "+
 				"If either is already set, ensure the value is not empty.",
 		)
 	}
@@ -124,6 +125,7 @@ func (p *DevOpsProvider) Configure(ctx context.Context, req provider.ConfigureRe
 func (p *DevOpsProvider) Resources(ctx context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
 		NewExampleResource,
+		NewEngineerResource,
 	}
 }
 
@@ -136,6 +138,10 @@ func (p *DevOpsProvider) EphemeralResources(ctx context.Context) []func() epheme
 func (p *DevOpsProvider) DataSources(ctx context.Context) []func() datasource.DataSource {
 	return []func() datasource.DataSource{
 		NewExampleDataSource,
+		NewEngineersDataSource,
+		NewDevelopersDataSource,
+		NewOperationsDataSource,
+		NewDevOpsDataSource,
 	}
 }
 
