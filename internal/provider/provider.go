@@ -124,31 +124,22 @@ func (p *DevOpsProvider) Configure(ctx context.Context, req provider.ConfigureRe
 
 func (p *DevOpsProvider) Resources(ctx context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
-		NewExampleResource,
 		NewEngineerResource,
 	}
 }
 
 func (p *DevOpsProvider) EphemeralResources(ctx context.Context) []func() ephemeral.EphemeralResource {
-	return []func() ephemeral.EphemeralResource{
-		NewExampleEphemeralResource,
-	}
+	return []func() ephemeral.EphemeralResource{}
 }
 
 func (p *DevOpsProvider) DataSources(ctx context.Context) []func() datasource.DataSource {
 	return []func() datasource.DataSource{
-		NewExampleDataSource,
 		NewEngineersDataSource,
-		NewDevelopersDataSource,
-		NewOperationsDataSource,
-		NewDevOpsDataSource,
 	}
 }
 
 func (p *DevOpsProvider) Functions(ctx context.Context) []func() function.Function {
-	return []func() function.Function{
-		NewExampleFunction,
-	}
+	return []func() function.Function{}
 }
 
 func New(version string) func() provider.Provider {
