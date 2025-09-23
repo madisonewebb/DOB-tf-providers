@@ -15,6 +15,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+
+	"github.com/madisonewebb/DOB-tf-providers/internal/client"
 )
 
 // Ensure DevOpsProvider satisfies various provider interfaces.
@@ -105,7 +107,7 @@ func (p *DevOpsProvider) Configure(ctx context.Context, req provider.ConfigureRe
 	}
 
 	// Create a new DevOps client using the configuration values
-	client, err := NewClient(endpoint)
+	apiClient, err := client.NewClient(endpoint)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to Create DevOps API Client",
@@ -118,8 +120,8 @@ func (p *DevOpsProvider) Configure(ctx context.Context, req provider.ConfigureRe
 
 	// Make the DevOps client available during DataSource and Resource
 	// type Configure methods.
-	resp.DataSourceData = client
-	resp.ResourceData = client
+	resp.DataSourceData = apiClient
+	resp.ResourceData = apiClient
 }
 
 func (p *DevOpsProvider) Resources(ctx context.Context) []func() resource.Resource {

@@ -1,4 +1,4 @@
-package provider
+package client
 
 import (
 	"encoding/json"
@@ -21,7 +21,6 @@ type Engineer struct {
 	Name  string `json:"name"`
 	Email string `json:"email"`
 }
-
 
 // NewClient creates a new DevOps API client
 func NewClient(host string) (*Client, error) {
@@ -75,24 +74,21 @@ func (c *Client) GetEngineers() ([]Engineer, error) {
 }
 
 // GetEngineer retrieves a specific engineer by ID
+// Since the API doesn't support individual engineer retrieval,
+// we get all engineers and filter by ID
 func (c *Client) GetEngineer(engineerID string) (*Engineer, error) {
-	req, err := http.NewRequest("GET", fmt.Sprintf("%s/engineers/%s", c.HostURL, engineerID), nil)
+	engineers, err := c.GetEngineers()
 	if err != nil {
 		return nil, err
 	}
 
-	body, err := c.doRequest(req)
-	if err != nil {
-		return nil, err
+	for _, engineer := range engineers {
+		if engineer.ID == engineerID {
+			return &engineer, nil
+		}
 	}
 
-	var engineer Engineer
-	err = json.Unmarshal(body, &engineer)
-	if err != nil {
-		return nil, err
-	}
-
-	return &engineer, nil
+	return nil, fmt.Errorf("engineer with ID %s not found", engineerID)
 }
 
 // CreateEngineer creates a new engineer

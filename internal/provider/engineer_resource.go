@@ -10,6 +10,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+
+	"github.com/madisonewebb/DOB-tf-providers/internal/client"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -26,7 +28,7 @@ func NewEngineerResource() resource.Resource {
 
 // engineerResource is the resource implementation.
 type engineerResource struct {
-	client *Client
+	client *client.Client
 }
 
 // Metadata returns the resource type name.
@@ -69,7 +71,7 @@ func (r *engineerResource) Create(ctx context.Context, req resource.CreateReques
 	}
 
 	// Create new engineer
-	engineer := Engineer{
+	engineer := client.Engineer{
 		Name:  plan.Name.ValueString(),
 		Email: plan.Email.ValueString(),
 	}
@@ -141,7 +143,7 @@ func (r *engineerResource) Update(ctx context.Context, req resource.UpdateReques
 	}
 
 	// Update existing engineer
-	engineer := Engineer{
+	engineer := client.Engineer{
 		ID:    plan.ID.ValueString(),
 		Name:  plan.Name.ValueString(),
 		Email: plan.Email.ValueString(),
@@ -198,11 +200,11 @@ func (r *engineerResource) Configure(_ context.Context, req resource.ConfigureRe
 		return
 	}
 
-	client, ok := req.ProviderData.(*Client)
+	client, ok := req.ProviderData.(*client.Client)
 	if !ok {
 		resp.Diagnostics.AddError(
 			"Unexpected Resource Configure Type",
-			fmt.Sprintf("Expected *Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
+			fmt.Sprintf("Expected *client.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
 		)
 
 		return

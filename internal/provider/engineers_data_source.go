@@ -7,6 +7,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+
+	"github.com/madisonewebb/DOB-tf-providers/internal/client"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -22,7 +24,7 @@ func NewEngineersDataSource() datasource.DataSource {
 
 // engineersDataSource is the data source implementation.
 type engineersDataSource struct {
-	client *Client
+	client *client.Client
 }
 
 // Metadata returns the data source type name.
@@ -96,11 +98,11 @@ func (d *engineersDataSource) Configure(_ context.Context, req datasource.Config
 		return
 	}
 
-	client, ok := req.ProviderData.(*Client)
+	client, ok := req.ProviderData.(*client.Client)
 	if !ok {
 		resp.Diagnostics.AddError(
 			"Unexpected Data Source Configure Type",
-			fmt.Sprintf("Expected *Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
+			fmt.Sprintf("Expected *client.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
 		)
 
 		return
