@@ -127,6 +127,7 @@ func (p *DevOpsProvider) Configure(ctx context.Context, req provider.ConfigureRe
 func (p *DevOpsProvider) Resources(ctx context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
 		NewEngineerResource,
+		NewDevResource,
 	}
 }
 
@@ -137,6 +138,7 @@ func (p *DevOpsProvider) EphemeralResources(ctx context.Context) []func() epheme
 func (p *DevOpsProvider) DataSources(ctx context.Context) []func() datasource.DataSource {
 	return []func() datasource.DataSource{
 		NewEngineersDataSource,
+		NewDevelopersDataSource,
 	}
 }
 

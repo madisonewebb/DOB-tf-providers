@@ -2,6 +2,7 @@ package client
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -15,11 +16,21 @@ type Client struct {
 	HTTPClient *http.Client
 }
 
+// ErrNotFound indicates a requested resource could not be located.
+var ErrNotFound = errors.New("resource not found")
+
 // Engineer represents an individual engineer
 type Engineer struct {
 	ID    string `json:"id"`
 	Name  string `json:"name"`
 	Email string `json:"email"`
+}
+
+// Developer represents a collection of developer engineers
+type Developer struct {
+	ID        string     `json:"id"`
+	Name      string     `json:"name"`
+	Engineers []Engineer `json:"engineers"`
 }
 
 // NewClient creates a new DevOps API client
@@ -88,7 +99,7 @@ func (c *Client) GetEngineer(engineerID string) (*Engineer, error) {
 		}
 	}
 
-	return nil, fmt.Errorf("engineer with ID %s not found", engineerID)
+	return nil, fmt.Errorf("%w: engineer with ID %s not found", ErrNotFound, engineerID)
 }
 
 // CreateEngineer creates a new engineer
@@ -150,6 +161,114 @@ func (c *Client) UpdateEngineer(engineerID string, engineer Engineer) (*Engineer
 // DeleteEngineer deletes an engineer
 func (c *Client) DeleteEngineer(engineerID string) error {
 	req, err := http.NewRequest("DELETE", fmt.Sprintf("%s/engineers/%s", c.HostURL, engineerID), nil)
+	if err != nil {
+		return err
+	}
+
+	_, err = c.doRequest(req)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// GetDevelopers retrieves all developers
+func (c *Client) GetDevelopers() ([]Developer, error) {
+	req, err := http.NewRequest("GET", fmt.Sprintf("%s/developers", c.HostURL), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	body, err := c.doRequest(req)
+	if err != nil {
+		return nil, err
+	}
+
+	var developers []Developer
+	err = json.Unmarshal(body, &developers)
+	if err != nil {
+		return nil, err
+	}
+
+	return developers, nil
+}
+
+// GetDeveloper retrieves a specific developer by ID
+func (c *Client) GetDeveloper(developerID string) (*Developer, error) {
+	developers, err := c.GetDevelopers()
+	if err != nil {
+		return nil, err
+	}
+
+	for _, developer := range developers {
+		if developer.ID == developerID {
+			return &developer, nil
+		}
+	}
+
+	return nil, fmt.Errorf("developer with ID %s not found", developerID)
+}
+
+// CreateDeveloper creates a new developer
+func (c *Client) CreateDeveloper(developer Developer) (*Developer, error) {
+	rb, err := json.Marshal(developer)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", fmt.Sprintf("%s/developers", c.HostURL), strings.NewReader(string(rb)))
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+
+	body, err := c.doRequest(req)
+	if err != nil {
+		return nil, err
+	}
+
+	var newDeveloper Developer
+	err = json.Unmarshal(body, &newDeveloper)
+	if err != nil {
+		return nil, err
+	}
+
+	return &newDeveloper, nil
+}
+
+// UpdateDeveloper updates an existing developer
+func (c *Client) UpdateDeveloper(developerID string, developer Developer) (*Developer, error) {
+	rb, err := json.Marshal(developer)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PUT", fmt.Sprintf("%s/developers/%s", c.HostURL, developerID), strings.NewReader(string(rb)))
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+
+	body, err := c.doRequest(req)
+	if err != nil {
+		return nil, err
+	}
+
+	var updatedDeveloper Developer
+	err = json.Unmarshal(body, &updatedDeveloper)
+	if err != nil {
+		return nil, err
+	}
+
+	return &updatedDeveloper, nil
+}
+
+// DeleteDeveloper deletes a developer
+func (c *Client) DeleteDeveloper(developerID string) error {
+	req, err := http.NewRequest("DELETE", fmt.Sprintf("%s/developers/%s", c.HostURL, developerID), nil)
 	if err != nil {
 		return err
 	}

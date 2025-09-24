@@ -2,6 +2,7 @@ package provider
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -112,10 +113,18 @@ func (r *engineerResource) Read(ctx context.Context, req resource.ReadRequest, r
 	// Get refreshed engineer value from API
 	engineer, err := r.client.GetEngineer(state.ID.ValueString())
 	if err != nil {
-		resp.Diagnostics.AddError(
-			"Error Reading Engineer",
-			"Could not read engineer ID "+state.ID.ValueString()+": "+err.Error(),
-		)
+		if errors.Is(err, client.ErrNotFound) {
+			resp.State.RemoveResource(ctx)
+			resp.Diagnostics.AddWarning(
+				"Engineer Missing",
+				fmt.Sprintf("Engineer with ID %s no longer exists. Removing from state.", state.ID.ValueString()),
+			)
+		} else {
+			resp.Diagnostics.AddError(
+				"Error Reading Engineer",
+				"Could not read engineer ID "+state.ID.ValueString()+": "+err.Error(),
+			)
+		}
 		return
 	}
 
