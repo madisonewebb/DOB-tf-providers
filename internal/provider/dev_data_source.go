@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -86,21 +87,42 @@ func (d *developersDataSource) Read(ctx context.Context, req datasource.ReadRequ
 	// Map response body to model
 	var state developersDataSourceModel
 	for _, developer := range developers {
-		// Map engineers for this developer
-		var engineerModels []devEngineerDataModel
+		// Map engineers for this developer - create types.List
+		engineerElementType := types.ObjectType{
+			AttrTypes: map[string]attr.Type{
+				"id":    types.StringType,
+				"name":  types.StringType,
+				"email": types.StringType,
+			},
+		}
+		
+		var engineerElements []attr.Value
 		for _, engineer := range developer.Engineers {
-			engineerModel := devEngineerDataModel{
-				ID:    types.StringValue(engineer.ID),
-				Name:  types.StringValue(engineer.Name),
-				Email: types.StringValue(engineer.Email),
+			engineerObj, diags := types.ObjectValue(
+				engineerElementType.AttrTypes,
+				map[string]attr.Value{
+					"id":    types.StringValue(engineer.ID),
+					"name":  types.StringValue(engineer.Name),
+					"email": types.StringValue(engineer.Email),
+				},
+			)
+			resp.Diagnostics.Append(diags...)
+			if resp.Diagnostics.HasError() {
+				return
 			}
-			engineerModels = append(engineerModels, engineerModel)
+			engineerElements = append(engineerElements, engineerObj)
+		}
+		
+		engineersList, diags := types.ListValue(engineerElementType, engineerElements)
+		resp.Diagnostics.Append(diags...)
+		if resp.Diagnostics.HasError() {
+			return
 		}
 
 		developerState := developerDataModel{
 			ID:        types.StringValue(developer.ID),
 			Name:      types.StringValue(developer.Name),
-			Engineers: engineerModels,
+			Engineers: engineersList,
 		}
 
 		state.Developers = append(state.Developers, developerState)
@@ -142,9 +164,9 @@ type developersDataSourceModel struct {
 
 // developerDataModel maps developer schema data.
 type developerDataModel struct {
-	ID        types.String             `tfsdk:"id"`
-	Name      types.String             `tfsdk:"name"`
-	Engineers []devEngineerDataModel `tfsdk:"engineers"`
+	ID        types.String `tfsdk:"id"`
+	Name      types.String `tfsdk:"name"`
+	Engineers types.List   `tfsdk:"engineers"`
 }
 
 // devEngineerDataModel maps engineer schema data within developer data source.

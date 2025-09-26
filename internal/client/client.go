@@ -175,7 +175,7 @@ func (c *Client) DeleteEngineer(engineerID string) error {
 
 // GetDevelopers retrieves all developers
 func (c *Client) GetDevelopers() ([]Developer, error) {
-	req, err := http.NewRequest("GET", fmt.Sprintf("%s/developers", c.HostURL), nil)
+	req, err := http.NewRequest("GET", fmt.Sprintf("%s/dev", c.HostURL), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -207,7 +207,7 @@ func (c *Client) GetDeveloper(developerID string) (*Developer, error) {
 		}
 	}
 
-	return nil, fmt.Errorf("developer with ID %s not found", developerID)
+	return nil, fmt.Errorf("%w: developer with ID %s not found", ErrNotFound, developerID)
 }
 
 // CreateDeveloper creates a new developer
@@ -217,7 +217,7 @@ func (c *Client) CreateDeveloper(developer Developer) (*Developer, error) {
 		return nil, err
 	}
 
-	req, err := http.NewRequest("POST", fmt.Sprintf("%s/developers", c.HostURL), strings.NewReader(string(rb)))
+	req, err := http.NewRequest("POST", fmt.Sprintf("%s/dev", c.HostURL), strings.NewReader(string(rb)))
 	if err != nil {
 		return nil, err
 	}
@@ -245,7 +245,7 @@ func (c *Client) UpdateDeveloper(developerID string, developer Developer) (*Deve
 		return nil, err
 	}
 
-	req, err := http.NewRequest("PUT", fmt.Sprintf("%s/developers/%s", c.HostURL, developerID), strings.NewReader(string(rb)))
+	req, err := http.NewRequest("PUT", fmt.Sprintf("%s/dev/%s", c.HostURL, developerID), strings.NewReader(string(rb)))
 	if err != nil {
 		return nil, err
 	}
@@ -268,7 +268,7 @@ func (c *Client) UpdateDeveloper(developerID string, developer Developer) (*Deve
 
 // DeleteDeveloper deletes a developer
 func (c *Client) DeleteDeveloper(developerID string) error {
-	req, err := http.NewRequest("DELETE", fmt.Sprintf("%s/developers/%s", c.HostURL, developerID), nil)
+	req, err := http.NewRequest("DELETE", fmt.Sprintf("%s/dev/%s", c.HostURL, developerID), nil)
 	if err != nil {
 		return err
 	}

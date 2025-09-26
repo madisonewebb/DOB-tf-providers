@@ -233,9 +233,26 @@ func (r *devResource) Update(ctx context.Context, req resource.UpdateRequest, re
 
 	// Convert engineers from state back to client format
 	var engineers []client.Engineer
-	// For now, just use empty engineers list since this is complex to extract from types.List
-	// In a real implementation, you would extract the engineers from state.Engineers
-	engineers = []client.Engineer{}
+	
+	// Extract engineers from state.Engineers (types.List)
+	if !state.Engineers.IsNull() && !state.Engineers.IsUnknown() {
+		var stateEngineers []map[string]interface{}
+		diags = state.Engineers.ElementsAs(ctx, &stateEngineers, false)
+		resp.Diagnostics.Append(diags...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+		
+		// Convert to client.Engineer format
+		for _, eng := range stateEngineers {
+			engineer := client.Engineer{
+				ID:    eng["id"].(string),
+				Name:  eng["name"].(string),
+				Email: eng["email"].(string),
+			}
+			engineers = append(engineers, engineer)
+		}
+	}
 
 	// Update existing developer
 	developer := client.Developer{

@@ -6,7 +6,7 @@ import (
 	"log"
 
 	"github.com/hashicorp/terraform-plugin-framework/provider"
-	devopsProvider "github.com/hashicorp/terraform-provider-scaffolding-framework/internal/provider"
+	devopsProvider "github.com/madisonewebb/DOB-tf-providers/internal/provider"
 )
 
 func main() {
